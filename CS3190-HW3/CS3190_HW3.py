@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 def simple_regression(x_pts, y_pts):
     x_avg = np.average(x_pts)
@@ -115,8 +116,11 @@ def vec_print(data_list):
 
 
 NUM_POINTS = 100
-x_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\x.csv'
-y_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\y.csv'
+cwd = os.getcwd()
+#x_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\x.csv'
+#y_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\y.csv'
+x_path = os.path.join(cwd,r'Data\x.csv')
+y_path = os.path.join(cwd,r'Data\y.csv')
 
 x_data = np.genfromtxt(x_path)
 y_data = np.genfromtxt(y_path)
