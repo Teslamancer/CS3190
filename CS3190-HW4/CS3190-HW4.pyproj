@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\A.csv" />
-    <Content Include="Data\X4.csv" />
+    <Content Include="Data\x4.csv" />
     <Content Include="Data\y4.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

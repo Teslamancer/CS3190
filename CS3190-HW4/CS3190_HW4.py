@@ -1,101 +1,122 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from scipy import linalg as LA
+import math
 
-def simple_regression(x_pts, y_pts):
-    x_avg = np.average(x_pts)
-    y_avg = np.average(y_pts)
-    x_vec = [x-x_avg for x in x_pts]
-    y_vec = [y-y_avg for y in y_pts]
 
-    a = np.dot(x_vec, y_vec)/np.dot(x_vec,x_vec)
-    b = y_avg - a*x_avg
+#def gradient_descent(grad_func, func, start_point, steps, step_size):
+#    to_return = []
+#    to_return.append("Step\tSSE\tNorm")
+#    temp = start_point
+#    for i in range(0,steps):
+#        to_return.append(steps,'\t')
+#        grad_point = grad_func(temp)
+#        new_temp = [None]*len(start_point)
+#        for n in range(0,len(start_point)):
+#            new_temp[n] = temp[n]-step_size*grad_point[n]
+#        #new_temp = (temp[0]-step_size*grad_point[0],temp[1]-step_size*grad_point[1])
+#        new_temp = tuple(new_temp)
+#        to_return.append(func(new_temp))
+#        temp = new_temp
+#    return to_return
 
-    return (a, b)
+#def incremental_gradient_descent(grad_func, func, alpha_vec, steps, step_size):
+#    alpha = alpha_vec
+#    i = 1
+#    while(np.linalg.norm(grad_func(alpha).norm) <= )
 
-def simple_prediction(a,b,x):
-    return a*x + b
+#def get_alpha(X_matrix_with_offset,y):
+#    temp = np.dot(np.transpose(X_matrix_with_offset),X_matrix_with_offset)
+#    temp = np.linalg.inv(temp)
+#    temp = np.dot(temp,np.transpose(X_matrix_with_offset))
+#    temp = np.dot(temp,y)
+#    return temp
 
-def print_model(a,b):
-    if(b<0):
-        print('y={}x{}'.format(a,b))
-    else:
-        print('y={}x+{}'.format(a,b))
+def hypothesis(theta, X, n):
+    h = np.ones((X.shape[0],1))
+    theta = theta.reshape(1,n)
+    for i in range(0,X.shape[0]):
+        h[i] = float(np.matmul(theta, X[i]))
+    h = h.reshape(X.shape[0])
+    return h
 
-def expand_matrix(vector, p):
-    n = vector.size
-    to_return = np.empty((n,p))
-    for row in range(0,n):
-        for power in range(0,p):
-            to_return[row,power] = vector[row] ** power
-    return to_return
+def BGD(theta, alpha, num_iters, h, X, y, n, to_return):
+    cost = np.ones(num_iters)
+    for i in range(0,num_iters):
+        to_return.append(i+1)
+        to_return.append(',')
+        theta[0] = theta[0] - (alpha/X.shape[0]) * sum(h - y)
+        for j in range(1,n):
+            theta[j] = theta[j] - (alpha/X.shape[0]) * sum((h-y) * X.transpose()[j])
+        #this_theta = theta
+        h = hypothesis(theta, X, n)
+        cost[i] = (1/X.shape[0]) * 0.5 * sum(np.square(h - y))
+        to_return.append(cost[i])
+        to_return.append(',')
+        to_return.append(np.linalg.norm(theta))
+        to_return.append(',')
+        to_return.append(str(theta))
+        to_return.append('\n')
+    theta = theta.reshape(1,n)
+    return theta, cost
 
-def poly_fit(x_data,y_data, deg):
-    x_exp = np.matrix(expand_matrix(x_data,deg))
+def BGD_linear_regression(X, y, learning_rate, num_iters):
+    to_return = ["Step,SSE,Norm,Alpha\n"]
 
-    y = np.matrix(y_data)
-    temp = ((x_exp.T * x_exp).I * x_exp.T)
+    n = X.shape[1]
+    #one_column = np.ones((X.shape[0],1))
+    #X = np.concatenate((one_column, X), axis = 1)
+    # initializing the parameter vector...
+    theta = np.zeros(n)
+    # hypothesis calculation....
+    h = hypothesis(theta, X, n)
+    # returning the optimized parameters by Gradient Descent...
+    theta, cost = BGD(theta,learning_rate,num_iters,h,X,y,n, to_return)
+    return theta, cost, to_return
 
-    coef = [0,0,0]
-    for i in range(0,x_data.size):
-        coef[0] += temp[0,i]*y[0,i]
-        coef[1] += temp[1,i]*y[0,i]
-        coef[2] += temp[2,i]*y[0,i]
+def incremental_linear_regression(X, y, learning_rate, num_iters):
+    to_return = ["Step,SSE,Norm,Alpha\n"]
 
-    
-    return tuple(coef)
+    n = X.shape[1]
 
-def poly_prediction(coef, x):
-    y=0
-    for p in range(0,len(coef)):
-        y+=coef[p]*(x**p)
+    theta = np.zeros(n)
+    theta, cost = IGD(theta, learning_rate, num_iters, X, y, n,to_return)
+    return theta, cost, to_return
 
-    return y
+def IGD(theta, alpha, num_iters, X, y, n, to_return):
+    cost = np.ones(num_iters)
+    data_size = X.shape[0]
+    for i in range(0,num_iters):
+        to_return.append(i+1)
+        to_return.append(',')
+        if(i >= data_size):
+            i %= data_size
+        preds = sigmoid(np.dot(X[i], theta))
 
-def gradient_descent(grad_func, func, start_point, steps, step_size):
-    to_return = []
-    to_return.append(func(start_point))
-    temp = start_point
-    for i in range(0,steps):
-        grad_point = grad_func(temp)
-        new_temp = (temp[0]-step_size*grad_point[0],temp[1]-step_size*grad_point[1])
-        to_return.append(func(new_temp))
-        temp = new_temp
-    return to_return
+        cost[i] = preds - y[i]
 
-def f_1(point):
-    x = point[0]
-    y = point[1]
+        gradient = np.dot(np.transpose(X[i]), cost[i]) / data_size
 
-    val = (x - y) ** 2 + (x * y)
+        theta -= alpha * gradient
+        to_return.append(cost[i])
+        to_return.append(',')
+        to_return.append(np.linalg.norm(theta))
+        to_return.append(',')
+        to_return.append(str(theta))
+        to_return.append('\n')
 
-    return val
+    return theta, cost
 
-def f_2(point):
-    x = point[0]
-    y = point[1]
+def sigmoid(x):
+    return 1.0 / (1 + np.exp(-x))
 
-    val = (1 - (y-4))**2 + 35 * ((x+6)-((y-4)**2))**2
-
-    return val
-
-def f_1_grad(point):
-    x = point[0]
-    y = point[1]
-
-    new_x = 2*x-y
-    new_y = 2*y-x
-
-    return(new_x,new_y)
-
-def f_2_grad(point):
-    x = point[0]
-    y = point[1]
-
-    new_x = 70 * (8*y+x-10-(y**2))
-    new_y = 140*(y**3) -1680 *(y**2) + 5878 * y - 140 * y * x + 560 * x - 5592
-
-    return(new_x,new_y)
+def vec_print(data_list):
+    print(r'\begin{bmatrix}\n')
+    for i in range(0,len(data_list)):
+        print(data_list[i])
+        print(r'\\', '\n')
+    print(r'\end{bmatrix}')
 
 def table_print(data_list):
     print(r'\begin{tabular}{|c|c|}\n')
@@ -105,108 +126,63 @@ def table_print(data_list):
         print(r'\\', '\n',r'\hline')
     print(r'\end{tabular}')
 
-def vec_print(data_list):
-    print(r'\begin{bmatrix}\n')
-    for i in range(0,len(data_list)):
-        print(data_list[i])
-        print(r'\\', '\n')
-    print(r'\end{bmatrix}')
+def low_rank_k(u,s,vh,num):
+# rank k approx
 
-        
+    u = u[:,:num]
+    vh = vh[:num,:]
+    s = s[:num]
+    s = np.diag(s)
+    my_low_rank = np.dot(np.dot(u,s),vh)
+    return my_low_rank
 
 
-NUM_POINTS = 100
+
 cwd = os.getcwd()
 #x_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\x.csv'
 #y_path=r'C:\Users\Hunter Schmidt\Documents\Homework\University of Utah\Fall 2020\CS 3190\HW 3\y.csv'
-x_path = os.path.join(cwd,r'Data\X4.csv')
+x_path = os.path.join(cwd,r'Data\x4.csv')
 y_path = os.path.join(cwd,r'Data\y4.csv')
-A_path = os.path.join(cwd,r'Data\A.csv')
+a_path = os.path.join(cwd,r'Data\A.csv')
 
-x_data = np.genfromtxt(x_path)
+x_data = np.genfromtxt(x_path,delimiter=',')
 y_data = np.genfromtxt(y_path)
+a_data = np.genfromtxt(a_path,delimiter=',')
+#alpha = get_alpha(x_data,y_data)
+#func = lambda point : (alpha[0] + alpha[1] * point[0] + alpha[2] * point[1] + alpha[3] * point[2])
+#grad_func = lambda point : (alpha[1], alpha[2], alpha[3])
 
-a,b = simple_regression(x_data, y_data)
-print('Simple Model:\n')
-print_model(a,b)
-print('\n Predictions:')
-print('x=4, y={}'.format(simple_prediction(a,b,4)), '\n')
-print('x=8.5, y={}'.format(simple_prediction(a,b,8.5)), '\n')
+#print(gradient_descent(grad_func,func,(0,0,0),100,0.01))
+alpha, error, to_print = BGD_linear_regression(x_data,y_data,0.01,100)
+to_print = [str(i) for i in to_print]
+#print(''.join(to_print))
 
-x_train = x_data[:80]
-y_train=(y_data[:80])
-train_a,train_b = simple_regression(x_train,y_train)
-print('Simple Model with Training:\n')
-print_model(train_a,train_b)
-print('\n Predictions:')
-print('x=4, y={}'.format(simple_prediction(train_a,train_b,4)), '\n')
-print('x=8.5, y={}'.format(simple_prediction(train_a,train_b,8.5)), '\n')
+alpha_IGD, error_IGD, to_print_IGD = incremental_linear_regression(x_data,y_data,0.01,100)
+to_print_IGD = [str(i) for i in to_print_IGD]
+print(''.join(to_print_IGD))
 
-full_residual_vec = []
-training_residual_vec = []
 
-full_training_vec = []
-training_training_vec = []
-for i in range(0,100):
-    x = x_data[i]
-    y=y_data[i]
-    if(i>=80):
-        full_residual_vec.append(y - simple_prediction(a,b,x))
-        training_residual_vec.append(y - simple_prediction(train_a,train_b,x))
+U, s, Vt = LA.svd(a_data)
+print("The second singular value is {}".format(s[2]))
+rank_a = 0
+e_vals = []
+for i in s:
+    if not np.isclose(i,0.0):
+        rank_a+=1
+        e_vals.append(i**2)
     else:
-        full_training_vec.append(y - simple_prediction(a,b,x))
-        training_training_vec.append(y - simple_prediction(train_a,train_b,x))
+        e_vals.append(0.0)
+print("The rank of A is {}".format(rank_a))
+V = np.transpose(Vt)
+print("The eigenvectors of A^TA are:\n")
+print(V)
 
-print('Residual Vector for full data model:\n')
-vec_print(full_residual_vec)
-print('Magnitude: ',np.linalg.norm(full_residual_vec))
+print("The Eigenvalues of A^TA are:\n")
+print(e_vals)
 
-print('Residual Vector for training data model:\n')
-vec_print(training_residual_vec)
-print('Magnitude: ',np.linalg.norm(training_residual_vec))
+#s_k = s
+#for i in range(3,len(s_k)):
+#    s_k[i]=0.0
+A_k = low_rank_k(U,s,Vt,3)
 
-print('Residual Vector 2 norm for full model on training data:')
-print('Magnitude: ',np.linalg.norm(full_training_vec))
-
-print('Residual Vector 2 norm for training model on training data:')
-print('Magnitude: ',np.linalg.norm(training_training_vec))
-#1 (d)
-new_matrix = expand_matrix(x_data, 3)
-table_print(new_matrix[[0,1,2], :])
-
-coefficients = poly_fit(x_train,y_train,3)
-print('Polynomial coefficients:')
-print(coefficients)
-
-residuals = []
-for i in range(0,100):
-    x = x_data[i]
-    y = y_data[i]
-    residuals.append(y - poly_prediction(coefficients, x))
-
-test_resid_norm = np.linalg.norm(residuals[80:])
-
-train_resid_norm = np.linalg.norm(residuals[:80])
-
-print('Residual norm for Test data:')
-print(test_resid_norm)
-print('Residual norm for training data:')
-print(train_resid_norm)
-
-three_a = gradient_descent(f_1_grad, f_1,(2,3),20,0.05)
-
-three_b = gradient_descent(f_2_grad, f_2,(2,3),100,0.0015)
-
-print('Gradient Descent values for f1 with 20 steps and gamma=.05')
-table_print(three_a)
-
-print('Gradient Descent values for f2 with 100 steps and gamma=.0015')
-table_print(three_b)
-
-print('Smallest value gradient descent for f1 with 20 steps and gamma=0.5')
-test_f1_descent = gradient_descent(f_1_grad, f_1,(2,3),20,0.5)
-table_print(test_f1_descent)
-
-print('Smallest value gradient descent for f2 with 100 steps and gamma=0.0017')
-test_f2_descent = gradient_descent(f_2_grad, f_2,(2,3),100,0.0017)
-table_print(test_f2_descent)
+print('End')
