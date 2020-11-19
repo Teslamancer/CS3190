@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from scipy import linalg as LA
 import math
+import copy
 
 
 #def gradient_descent(grad_func, func, start_point, steps, step_size):
@@ -56,13 +57,20 @@ def BGD(theta, alpha, num_iters, h, X, y, n, to_return):
         to_return.append(',')
         to_return.append(np.linalg.norm(theta))
         to_return.append(',')
-        to_return.append(str(theta))
+        to_return.append(copy.deepcopy(theta))
         to_return.append('\n')
     theta = theta.reshape(1,n)
     return theta, cost
 
 def BGD_linear_regression(X, y, learning_rate, num_iters):
-    to_return = ["Step,SSE,Norm,Alpha\n"]
+    to_return = ["Step"]
+    to_return.append(',')
+    to_return.append('SSE')
+    to_return.append(',')
+    to_return.append('Norm')
+    to_return.append(',')
+    to_return.append('Alpha')
+    to_return.append('\n')
 
     n = X.shape[1]
     #one_column = np.ones((X.shape[0],1))
@@ -76,7 +84,14 @@ def BGD_linear_regression(X, y, learning_rate, num_iters):
     return theta, cost, to_return
 
 def incremental_linear_regression(X, y, learning_rate, num_iters):
-    to_return = ["Step,SSE,Norm,Alpha\n"]
+    to_return = ["Step"]
+    to_return.append(',')
+    to_return.append('SSE')
+    to_return.append(',')
+    to_return.append('Norm')
+    to_return.append(',')
+    to_return.append('Alpha')
+    to_return.append('\n')
 
     n = X.shape[1]
 
@@ -94,7 +109,7 @@ def IGD(theta, alpha, num_iters, X, y, n, to_return):
             i %= data_size
         preds = sigmoid(np.dot(X[i], theta))
 
-        cost[i] = preds - y[i]
+        cost[i] = (preds - y[i]) ** 2
 
         gradient = np.dot(np.transpose(X[i]), cost[i]) / data_size
 
@@ -103,7 +118,7 @@ def IGD(theta, alpha, num_iters, X, y, n, to_return):
         to_return.append(',')
         to_return.append(np.linalg.norm(theta))
         to_return.append(',')
-        to_return.append(str(theta))
+        to_return.append(copy.deepcopy(theta))
         to_return.append('\n')
 
     return theta, cost
@@ -118,13 +133,25 @@ def vec_print(data_list):
         print(r'\\', '\n')
     print(r'\end{bmatrix}')
 
-def table_print(data_list):
-    print(r'\begin{tabular}{|c|c|}\n')
-    print(r'\hline')
-    for i in range(0,len(data_list)):
-        print('{} & {}'.format(i, data_list[i]))
-        print(r'\\', '\n',r'\hline')
-    print(r'\end{tabular}')
+def table_format(data_list):
+    data_list.insert(0,r'\begin{longtable}{|c|c|c|c|c|}')
+    data_list.insert(1,'\n')
+    data_list.insert(2,r'\hline')
+    data_list.insert(3,'\n')
+    for i in range(4,len(data_list)):
+        #print('{} & {}'.format(data_list[i]))
+        if(data_list[i] == ','):
+            data_list[i] = '&'
+        elif(isinstance(data_list[i],int)):
+            data_list[i] = str(data_list[i])
+        elif(data_list[i] == '\n'):
+            data_list[i] = ''.join([r'\\','\n',r'\hline','\n'])
+        elif(isinstance(data_list[i],np.float64)):
+            data_list[i] = "{:.5e}".format(data_list[i])
+        elif(isinstance(data_list[i],np.ndarray) and all(isinstance(x, np.float64) for x in data_list[i])):
+            data_list[i] = str(["{:.3e}".format(n) for n in data_list[i]])
+    data_list.append(r'\end{longtable}')
+    return ''.join(data_list)
 
 def low_rank_k(u,s,vh,num):
 # rank k approx
@@ -135,6 +162,19 @@ def low_rank_k(u,s,vh,num):
     s = np.diag(s)
     my_low_rank = np.dot(np.dot(u,s),vh)
     return my_low_rank
+
+def vec_format(data_list):   
+    to_return = []
+    for i in range(0,len(data_list)):
+        to_return.append(r'\begin{bmatrix}')
+        to_return.append('\n')
+        for n in range(0, len(data_list[i])):
+            to_return.append(str("{:.3e}".format(data_list[i][n])))
+            to_return.append(r'\\')
+            to_return.append('\n')
+        to_return.append(r'\end{bmatrix}')
+        to_return.append('\n')
+    return ''.join(to_return)
 
 
 
@@ -154,12 +194,12 @@ a_data = np.genfromtxt(a_path,delimiter=',')
 
 #print(gradient_descent(grad_func,func,(0,0,0),100,0.01))
 alpha, error, to_print = BGD_linear_regression(x_data,y_data,0.01,100)
-to_print = [str(i) for i in to_print]
-#print(''.join(to_print))
+#to_print = [str(i) for i in to_print]
+print(table_format(to_print))
 
 alpha_IGD, error_IGD, to_print_IGD = incremental_linear_regression(x_data,y_data,0.01,100)
-to_print_IGD = [str(i) for i in to_print_IGD]
-print(''.join(to_print_IGD))
+#to_print_IGD = [str(i) for i in to_print_IGD]
+print(table_format(to_print_IGD))
 
 
 U, s, Vt = LA.svd(a_data)
@@ -175,14 +215,31 @@ for i in s:
 print("The rank of A is {}".format(rank_a))
 V = np.transpose(Vt)
 print("The eigenvectors of A^TA are:\n")
-print(V)
+print(vec_format(V))
 
 print("The Eigenvalues of A^TA are:\n")
-print(e_vals)
+print(str(["{:.3e}".format(n) for n in e_vals]))
 
 #s_k = s
 #for i in range(3,len(s_k)):
 #    s_k[i]=0.0
 A_k = low_rank_k(U,s,Vt,3)
+norm_1 = np.linalg.norm(np.subtract(a_data,A_k),ord='fro') ** 2
+norm_2 = np.linalg.norm(np.subtract(a_data,A_k),ord=2) ** 2
 
-print('End')
+print('Froeb norm A-A_k: ', norm_1)
+print('2 norm A-A_k: ', norm_2)
+n = a_data.shape[0]
+C = np.identity(n) - np.ones((n,n))/n
+A_centered = np.dot(C, a_data)
+
+U_c, s_c, Vt_c = LA.svd(A_centered)
+V_c = np.transpose(Vt_c)
+B = V_c[3:,:]
+error = np.dot(a_data,np.transpose(B))
+
+norm_3 = np.linalg.norm(error,ord='fro') ** 2
+norm_4 = np.linalg.norm(error,ord=2) ** 2
+
+print('Froeb norm A-piB: ', norm_3)
+print('2 norm A-piB: ', norm_4)
