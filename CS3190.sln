@@ -7,6 +7,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CS3190-HW3", "CS3190-HW3\CS
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CS3190-HW4", "CS3190-HW4\CS3190-HW4.pyproj", "{82EECF64-F10F-4073-9308-5BDA861F4ADB}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CS3190-HW5", "CS3190-HW5\CS3190-HW5.pyproj", "{FBA08A7B-4E9D-4DB8-8385-6AF9BABD2508}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,8 @@ Global
 		{3437084F-DABA-412C-9333-C635AD1A0064}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82EECF64-F10F-4073-9308-5BDA861F4ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82EECF64-F10F-4073-9308-5BDA861F4ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBA08A7B-4E9D-4DB8-8385-6AF9BABD2508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBA08A7B-4E9D-4DB8-8385-6AF9BABD2508}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
